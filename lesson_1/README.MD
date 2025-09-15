@@ -1,9 +1,8 @@
 # Lessoon 1 - Basic LLM call with tool usage.
 
 ## How to run
-`python
 
-```bash
+```
 python.exe .\chat_with_calculator.py
 ```
 
