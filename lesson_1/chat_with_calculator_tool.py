@@ -113,8 +113,8 @@ def get_completion_from_messages(messages, model="gpt-4o"):
 # Example usage
 messages = [
     {"role": "system", "content": "You are a helpful AI assistant."},
-    {"role": "user", "content": "Kdo je v Česku prezident?"}
-    #{"role": "user", "content": "Spočítej 12 * (3 + 4)"}
+    {"role": "user", "content": "Spočítej 12 * (3 + 4)"}
+    #{"role": "user", "content": "Kdo je v Česku prezident?"}
 ]
 
 response = get_completion_from_messages(messages)

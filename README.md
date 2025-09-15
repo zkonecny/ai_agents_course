@@ -1,6 +1,6 @@
-# ai_agents_course
+# AI Agents course
 
-# The repository contains my projects for homeworks in AI agent course.
+## The repository contains my projects for homeworks in AI agent course.
 
-# Lessoon 1 - homework
+### Lesson 1 - Chat with calculator tool
 Basic LLM call with tool usage.
