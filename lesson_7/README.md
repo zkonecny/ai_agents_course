@@ -56,6 +56,20 @@ Type your question. The agent will answer using OpenAI and may automatically cal
 4. **Tool Usage Logging**  
 After each answer, the app lists which tools were used to generate the response.
 
+## Example Interaction
+
+=== AI Agent (Semantic Kernel + OpenAI) ===  
+Enter a question (or 'exit' to quit):  
+> Who is Roger Federer?
+
+- Answer -  
+Roger Federer is a Swiss former professional tennis player, born on August 8, 1981. He is widely regarded as one of the greatest tennis players of all time. Federer won 20 Grand Slam singles titles, ranking him third behind Rafael Nadal and Novak Djokovic. He has reached 31 Grand Slam finals, making him one of the most successful players in tennis history.
+
+Federer's career is marked by his rivalries with other top players, including Rafael Nadal and Novak Djokovic, which are considered some of the greatest in the sport. He is known for his elegant playing style and has won a total of 103 ATP singles titles throughout his career.
+
+- Used tools -  
+ wiki.SearchWikipedia
+
 ## Example Tool Registration
 
 Tools are registered in `Program.cs` like this:
