@@ -1,4 +1,4 @@
-# MSSQL Agent with Weather Tool - N8N Workflow
+# AI Agent with database and weather tool - N8N Workflow
 
 An intelligent AI agent for querying SQL Server databases using natural language, powered by OpenAI GPT-4 Mini.
 
