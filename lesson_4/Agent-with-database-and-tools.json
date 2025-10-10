@@ -1,0 +1,276 @@
+{
+  "name": "MSSQL Agent with Tools",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        340,
+        580
+      ],
+      "id": "chat-trigger-001",
+      "name": "When chat message received",
+      "webhookId": "mssql-agent-webhook"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an AI assistant for an e-commerce platform with access to SQL Server database and helpful tools.\n\n## Your Capabilities:\n\n### Database Access:\n**SQL Server (MSSQL)** - E-commerce database with:\n   - **Users**: Customer profiles, contact info, purchase history\n   - **Products**: Product catalog with pricing, stock levels\n   - **Orders**: Order history, status, payment info\n   - **OrderItems**: Individual items in orders\n   - **Categories**: Product categorization\n   - **Payments**: Payment transactions\n\n### Available Tools:\n1. **MSSQL Query Executor** - Execute custom SQL queries\n2. **MSSQL List Tables** - Get list of all available tables\n3. **MSSQL Get Table Schema** - Get column information for specific table\n4. **Weather API** - Current weather information for delivery planning\n\n## Database Schema:\n\n### Users Table\nFields: Id, Email, FirstName, LastName, Phone, DateOfBirth, Street, City, State, ZipCode, Country, TotalOrders, TotalSpent, NewsletterOptIn, SMSNotifications, IsActive, JoinDate, LastLogin\n\n### Products Table\nFields: Id, Name, Description, CategoryId, Price, StockQuantity, Brand, SKU, Weight, Length, Width, Height, Rating, ReviewCount, MainImageUrl, ThumbnailUrl, Features, IsActive, CreatedAt, UpdatedAt\n\n### Orders Table\nFields: Id, UserId, OrderDate, Status, Subtotal, ShippingCost, TaxAmount, TotalAmount, ShippingStreet, ShippingCity, ShippingState, ShippingZipCode, ShippingCountry, PaymentMethod, TrackingNumber\n\n### OrderItems Table\nFields: Id, OrderId, ProductId, ProductName, Quantity, UnitPrice, TotalPrice\n\n### Categories Table\nFields: Id, Name, Description, CreatedAt\n\n### Payments Table\nFields: Id, OrderId, PaymentMethod, Amount, Status, TransactionId, ProcessedAt\n\n## Guidelines:\n\n### Query Strategy:\n- Always use SQL for data queries and calculations\n- Start with simple queries, then add complexity\n- Use JOINs to combine data from multiple tables\n- Always add WHERE clauses to filter data appropriately\n- Use TOP or LIMIT to restrict large result sets\n- Use SQL aggregate functions (SUM, AVG, COUNT, etc.) for calculations\n\n### Response Format:\n- Be conversational and helpful\n- Present data in clear, structured format\n- Provide insights, not just raw data\n- Suggest follow-up questions when relevant\n\n### Common Query Examples:\n\n**Customer Queries:**\n- \"Top 10 customers\" → SELECT TOP 10 FirstName, LastName, TotalSpent FROM Users ORDER BY TotalSpent DESC\n- \"New customers this month\" → SELECT COUNT(*) FROM Users WHERE JoinDate >= DATEADD(month, -1, GETDATE())\n\n**Product Queries:**\n- \"Low stock products\" → SELECT Name, StockQuantity FROM Products WHERE StockQuantity < 10 AND IsActive = 1\n- \"Products by category\" → SELECT p.Name, c.Name as Category FROM Products p JOIN Categories c ON p.CategoryId = c.Id\n\n**Sales Analysis:**\n- \"Monthly revenue\" → SELECT YEAR(OrderDate) as Year, MONTH(OrderDate) as Month, SUM(TotalAmount) as Revenue FROM Orders WHERE Status = 'Completed' GROUP BY YEAR(OrderDate), MONTH(OrderDate)\n- \"Average order value\" → SELECT AVG(TotalAmount) FROM Orders WHERE Status = 'Completed'\n- \"Discount calculations\" → SELECT Price, Price * 0.85 as DiscountPrice FROM Products\n\n**Use Weather API for:**\n- Delivery planning based on weather\n- Regional weather conditions\n\n## Important Notes:\n- Always validate that tables and columns exist\n- Use appropriate SQL Server syntax (T-SQL)\n- Use SQL for all mathematical calculations (percentages, averages, aggregations)\n- Consider performance - use indexes, avoid SELECT *\n- Provide business context in your answers\n- If uncertain, query table schema first",
+          "maxIterations": 15,
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        640,
+        580
+      ],
+      "id": "ai-agent-001",
+      "name": "AI Agent - MSSQL Assistant",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        460,
+        840
+      ],
+      "id": "openai-model-001",
+      "name": "OpenAI GPT-4 Mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "0yEunOn71yargPRc",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Execute SQL queries on the e-commerce database. Use this to query Users, Products, Orders, Categories, OrderItems, and Payments tables.",
+        "operation": "executeQuery",
+        "query": "={{ $fromAI('sql_query', 'SELECT * FROM Users WHERE IsActive = 1', 'string') }}"
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        680
+      ],
+      "id": "mssql-query-tool-001",
+      "name": "MSSQL Query Executor",
+      "credentials": {
+        "microsoftSql": {
+          "id": "v6DNoMNI4WiySoKE",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get list of all available tables in the SQL Server database.",
+        "operation": "executeQuery",
+        "query": "SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME"
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        800
+      ],
+      "id": "mssql-tables-tool-001",
+      "name": "MSSQL List Tables",
+      "credentials": {
+        "microsoftSql": {
+          "id": "v6DNoMNI4WiySoKE",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get schema information for a specific table including column names, data types, and constraints.",
+        "operation": "executeQuery",
+        "query": "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{{ $fromAI('table_name', 'Users', 'string') }}' ORDER BY ORDINAL_POSITION"
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        920
+      ],
+      "id": "mssql-schema-tool-001",
+      "name": "MSSQL Get Table Schema",
+      "credentials": {
+        "microsoftSql": {
+          "id": "v6DNoMNI4WiySoKE",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "cityName": "={{ $fromAI('city', 'Prague', 'string') }}"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        680
+      ],
+      "id": "weather-tool-001",
+      "name": "Weather Information",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "2lclz93so6mobGzs",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        840
+      ],
+      "id": "memory-001",
+      "name": "Conversation Memory"
+    },
+    {
+      "parameters": {
+        "content": "## MSSQL Agent with Weather Tool\n\n### Purpose:\nAI agent for e-commerce SQL database queries with weather information.\n\n### Example Queries:\n\n**Database Queries:**\n- \"Show me top 10 customers by total spending\"\n- \"What products are low on stock?\"\n- \"Find all pending orders from last week\"\n- \"List products in Electronics category\"\n\n**Business Intelligence:**\n- \"Calculate average order value for last month\"\n- \"What's the total revenue from completed orders this year?\"\n- \"Show me customers who joined this month\"\n- \"Calculate 15% discount on all products over $100\"\n\n**Weather for Logistics:**\n- \"What's the weather in New York?\"\n- \"Check weather for delivery planning\"\n\n**Complex Analysis:**\n- \"Find top 5 products by revenue and show their details\"\n- \"List customers who haven't ordered in 30 days\"\n- \"Calculate monthly revenue growth rate\"\n\n### Features:\n- SQL Server database access\n- OpenAI GPT-4 Mini for intelligence\n- Weather API for delivery planning\n- Conversation memory\n- Schema discovery\n- SQL-based calculations\n\n### Setup:\n1. Configure MSSQL credentials\n2. Add OpenAI API key\n3. Optional: Weather API key\n4. Test with simple query",
+        "height": 620,
+        "width": 420
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        440
+      ],
+      "id": "sticky-note-001",
+      "name": "Documentation"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - MSSQL Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT-4 Mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - MSSQL Assistant",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MSSQL Query Executor": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent - MSSQL Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MSSQL List Tables": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent - MSSQL Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MSSQL Get Table Schema": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent - MSSQL Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather Information": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent - MSSQL Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent - MSSQL Assistant",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "simplified-v2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "920cb5ca3de38fa2a2a1592b0c40fadea77e9a36b95dca7b272578056d96629c"
+  },
+  "id": "MSSQLAgentSimplified",
+  "tags": [
+    "database",
+    "mssql",
+    "agent",
+    "simplified"
+  ]
+}
+
