@@ -251,7 +251,3 @@ After mastering CartPole, you can try:
 - Learning may take 5-15 minutes depending on hardware
 - CPU training is sufficient, GPU not necessary
 - First episodes may have very low rewards - this is normal!
-
----
-
-**Created for AI Agents Course - Lesson 10**
